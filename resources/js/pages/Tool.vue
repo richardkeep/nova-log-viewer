@@ -54,6 +54,11 @@
             type="arrow-down"
             v-tooltip="__('Scroll to bottom')"
           />
+          <ToolbarButton
+            @click="deleteLogFile"
+            type="trash"
+            v-tooltip="__('Delete Log File')"
+          />
         </div>
       </div>
     </div>
@@ -70,9 +75,9 @@
 
 <script>
 import CodeMirror from 'codemirror'
-import ToolbarButton from '../components/ToolbarButton.vue'
 import inflector from 'inflector-js'
 import isString from 'lodash/isString'
+import ToolbarButton from '../components/ToolbarButton.vue'
 
 function singularOrPlural(value, suffix) {
   if (isString(suffix) && suffix.match(/^(.*)[A-Za-zÀ-ÖØ-öø-ÿ]$/) == null)
@@ -165,7 +170,11 @@ export default {
       })
     },
 
-    fetchContent() {
+      fetchContent() {
+        if (typeof this.selectedLogFile === 'undefined') {
+        return
+        }
+
       this.requestContent().then(
         ({ data: { content, lastLine, numberOfLines } }) => {
           this.lastLine = lastLine
@@ -179,7 +188,10 @@ export default {
       )
     },
 
-    replaceContent() {
+      replaceContent() {
+    if (typeof this.selectedLogFile === 'undefined') {
+        return
+    }
       this.lastLine = 0
       this.requestContent().then(
         ({ data: { content, lastLine, numberOfLines } }) => {
@@ -200,6 +212,16 @@ export default {
         const scrollInfo = this.codemirror.getScrollInfo()
         this.codemirror.scrollTo(0, scrollInfo.height)
       })
+    },
+
+    deleteLogFile() {
+        if (confirm('Are you sure you want to delete this file?')) {
+            Nova.request().delete('/nova-vendor/logs/delete', {
+                params: { log: this.selectedLogFile.value },
+            }).then(() => {
+                location.reload()
+            })
+        }
     },
 
     setupInterval() {

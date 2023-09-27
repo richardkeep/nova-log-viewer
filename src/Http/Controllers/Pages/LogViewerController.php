@@ -53,4 +53,13 @@ class LogViewerController extends Controller
             'numberOfLines' => $logFile->numberOfLines(),
         ]);
     }
+
+    public function delete(NovaRequest $request)
+    {
+        $logFile = storage_path('logs/' . $request->log);
+
+        if (FileFacade::exists($logFile)) {
+            FileFacade::delete($logFile);
+        };
+    }
 }
